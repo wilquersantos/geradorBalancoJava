@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.springframework.boot' version '3.2.2'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group = 'com.emissor'
+version = '1.0.0'
+sourceCompatibility = '21'
+
+repositories {
+    mavenCentral()
+}
+
+javafx {
+    version = "21.0.2"
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // SQLite
+    implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+    
+    // Lombok (opcional, para reduzir boilerplate)
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    
+    // Logging
+    implementation 'ch.qos.logback:logback-classic'
+    
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+application {
+    mainClass = 'com.emissor.EmissorApplication'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Configurar encoding para evitar problemas com caracteres especiais
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

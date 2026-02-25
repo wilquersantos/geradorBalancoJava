@@ -1,0 +1,112 @@
+# Exemplos de Requisições HTTP para teste da API
+
+### Health Check
+GET http://localhost:8084/api/health
+
+###
+
+### Criar Item (Mobile)
+POST http://localhost:8084/api/items
+X-API-Token: emissor-token-2026
+Content-Type: application/json
+
+{
+  "codigoReferencia": "ABC123",
+  "quantidade": 5,
+  "descricao": "Produto de teste do mobile"
+}
+
+###
+
+### Criar Item 2
+POST http://localhost:8084/api/items
+X-API-Token: emissor-token-2026
+Content-Type: application/json
+
+{
+  "codigoReferencia": "XYZ789",
+  "quantidade": 10,
+  "descricao": "Outro produto teste"
+}
+
+###
+
+### Listar Todos os Itens
+GET http://localhost:8084/api/items
+X-API-Token: emissor-token-2026
+
+###
+
+### Buscar Itens por código/descrição
+GET http://localhost:8084/api/items?search=ABC
+X-API-Token: emissor-token-2026
+
+###
+
+### Obter Item por ID
+GET http://localhost:8084/api/items/1
+X-API-Token: emissor-token-2026
+
+###
+
+### Atualizar Item
+PUT http://localhost:8084/api/items/1
+X-API-Token: emissor-token-2026
+Content-Type: application/json
+
+{
+  "codigoReferencia": "ABC123-UPDATED",
+  "quantidade": 15,
+  "descricao": "Produto atualizado"
+}
+
+###
+
+### Excluir Item
+DELETE http://localhost:8084/api/items/1
+X-API-Token: emissor-token-2026
+
+###
+
+### Contar Itens
+GET http://localhost:8084/api/items/count
+X-API-Token: emissor-token-2026
+
+###
+
+### Teste de Autenticação Inválida
+POST http://localhost:8084/api/items
+X-API-Token: token-invalido
+Content-Type: application/json
+
+{
+  "codigoReferencia": "TEST",
+  "quantidade": 1,
+  "descricao": "Deve retornar 401"
+}
+
+###
+
+### Teste de Validação (quantidade negativa)
+POST http://localhost:8084/api/items
+X-API-Token: emissor-token-2026
+Content-Type: application/json
+
+{
+  "codigoReferencia": "TEST",
+  "quantidade": -5,
+  "descricao": "Deve retornar erro de validação"
+}
+
+###
+
+### Teste de Validação (campos obrigatórios vazios)
+POST http://localhost:8084/api/items
+X-API-Token: emissor-token-2026
+Content-Type: application/json
+
+{
+  "codigoReferencia": "",
+  "quantidade": 5,
+  "descricao": ""
+}

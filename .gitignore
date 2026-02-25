@@ -1,0 +1,69 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Android
+EmissorMobile/.gradle/
+EmissorMobile/local.properties
+EmissorMobile/.idea/
+EmissorMobile/captures/
+EmissorMobile/.externalNativeBuild/
+EmissorMobile/.cxx/
+EmissorMobile/*.iml
+EmissorMobile/build/
+EmissorMobile/app/build/
+EmissorMobile/.DS_Store
+EmissorMobile/.navigation/
+
+# APK files (descomente se não quiser versionar APKs)
+# *.apk
+
+# Keystore files
+*.jks
+*.keystore

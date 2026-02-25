@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Emissor Mobile</string>
+    
+    <!-- Scanner -->
+    <string name="scan_barcode">Escanear Código</string>
+    <string name="scanning">Escaneando...</string>
+    <string name="point_camera">Aponte a câmera para o código de barras</string>
+    
+    <!-- Items List -->
+    <string name="items_list">Lista de Itens</string>
+    <string name="no_items">Nenhum item escaneado ainda</string>
+    <string name="sync_with_server">Sincronizar com Servidor</string>
+    <string name="synced">Sincronizado</string>
+    <string name="pending_sync">Pendente</string>
+    
+    <!-- Item Details -->
+    <string name="barcode">Código:</string>
+    <string name="quantity">Quantidade:</string>
+    <string name="description">Descrição:</string>
+    <string name="add_description">Adicionar descrição</string>
+    <string name="edit_item">Editar Item</string>
+    <string name="delete_item">Excluir</string>
+    <string name="save">Salvar</string>
+    <string name="cancel">Cancelar</string>
+    
+    <!-- Settings -->
+    <string name="settings">Configurações</string>
+    <string name="server_ip">IP do Servidor</string>
+    <string name="server_port">Porta</string>
+    <string name="api_token">Token de Autenticação</string>
+    <string name="auto_quantity">Quantidade Automática</string>
+    <string name="auto_quantity_desc">Incrementar automaticamente ao escanear o mesmo código</string>
+    <string name="auto_sync">Sincronização Automática</string>
+    <string name="auto_sync_desc">Enviar automaticamente quando conectado</string>
+    
+    <!-- Messages -->
+    <string name="item_saved">Item salvo</string>
+    <string name="item_deleted">Item excluído</string>
+    <string name="sync_success">Sincronizado com sucesso</string>
+    <string name="sync_error">Erro ao sincronizar</string>
+    <string name="connection_error">Erro de conexão</string>
+    <string name="camera_permission">Permissão de câmera necessária</string>
+    
+    <!-- Actions -->
+    <string name="retry">Tentar Novamente</string>
+    <string name="clear_all">Limpar Tudo</string>
+    <string name="send_to_server">Enviar para Servidor</string>
+</resources>

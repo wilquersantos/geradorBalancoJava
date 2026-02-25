@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  android-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: emissor-mobile-builder
+    volumes:
+      - ./app:/app/app
+      - ./build:/app/build
+      - gradle-cache:/root/.gradle
+    working_dir: /app
+    command: ./gradlew assembleDebug --no-daemon --stacktrace
+
+volumes:
+  gradle-cache:
