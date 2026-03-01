@@ -3,6 +3,9 @@ package com.emissor.mobile.data.remote.dto
 import com.google.gson.annotations.SerializedName
 
 data class ItemRequestDTO(
+    @SerializedName("coleta")
+    val coleta: String,
+
     @SerializedName("codigoReferencia")
     val codigoReferencia: String,
     
@@ -16,6 +19,9 @@ data class ItemRequestDTO(
 data class ItemResponseDTO(
     @SerializedName("id")
     val id: Long,
+
+    @SerializedName("coleta")
+    val coleta: String? = null,
     
     @SerializedName("codigoReferencia")
     val codigoReferencia: String,

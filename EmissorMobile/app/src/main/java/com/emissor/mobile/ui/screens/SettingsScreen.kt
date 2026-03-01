@@ -1,7 +1,9 @@
 package com.emissor.mobile.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -12,8 +14,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.emissor.mobile.R
+import com.emissor.mobile.ui.viewmodel.ConnectionStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,6 +30,7 @@ fun SettingsScreen(
     apiToken: String,
     autoQuantity: Boolean,
     autoSync: Boolean,
+    connectionStatus: ConnectionStatus,
     onServerIpChange: (String) -> Unit,
     onServerPortChange: (String) -> Unit,
     onApiTokenChange: (String) -> Unit,
@@ -34,7 +42,6 @@ fun SettingsScreen(
     var localIp by remember { mutableStateOf(serverIp) }
     var localPort by remember { mutableStateOf(serverPort) }
     var localToken by remember { mutableStateOf(apiToken) }
-    var connectionStatus by remember { mutableStateOf<ConnectionStatus?>(null) }
     
     Scaffold(
         topBar = {
@@ -74,6 +81,36 @@ fun SettingsScreen(
                         text = "Servidor",
                         style = MaterialTheme.typography.titleMedium
                     )
+
+                    val statusColor = when (connectionStatus) {
+                        ConnectionStatus.Connected -> Color(0xFF4CAF50)
+                        ConnectionStatus.Disconnected -> Color(0xFFF44336)
+                        ConnectionStatus.Testing -> Color(0xFFFFC107)
+                    }
+
+                    val statusText = when (connectionStatus) {
+                        ConnectionStatus.Connected -> "Conectado"
+                        ConnectionStatus.Disconnected -> "Desconectado"
+                        ConnectionStatus.Testing -> "Testando"
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .clip(CircleShape)
+                                .background(statusColor)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Status: $statusText",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
                     
                     OutlinedTextField(
                         value = localIp,
@@ -117,7 +154,6 @@ fun SettingsScreen(
                     // Test connection button
                     Button(
                         onClick = {
-                            connectionStatus = ConnectionStatus.Testing
                             onTestConnection()
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -141,7 +177,7 @@ fun SettingsScreen(
                                 Text("Testando conexão...")
                             }
                         }
-                        ConnectionStatus.Success -> {
+                        ConnectionStatus.Connected -> {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
@@ -159,7 +195,7 @@ fun SettingsScreen(
                                 )
                             }
                         }
-                        ConnectionStatus.Error -> {
+                        ConnectionStatus.Disconnected -> {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
@@ -177,16 +213,7 @@ fun SettingsScreen(
                                 )
                             }
                         }
-                        null -> {}
                     }
-                    
-                    Divider()
-                    
-                    Text(
-                        text = "URL: http://$localIp:$localPort/api/items",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
-                    )
                 }
             }
             
@@ -272,15 +299,11 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Emissor Mobile v1.0\nLeitor de código de barras com sincronização",
+                        text = "${stringResource(R.string.app_name)} v1.0\nLeitor de código de barras com sincronização",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
         }
     }
-}
-
-enum class ConnectionStatus {
-    Testing, Success, Error
 }

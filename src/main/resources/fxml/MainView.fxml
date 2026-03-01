@@ -3,59 +3,100 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.emissor.ui.MainViewController"
-      spacing="10" style="-fx-background-color: #f4f4f4;">
-    
-    <padding>
-        <Insets top="15" right="15" bottom="15" left="15"/>
-    </padding>
-    
-    <!-- Header -->
-    <HBox alignment="CENTER_LEFT" spacing="10">
-        <Label text="EmissorJava - Sistema de Recebimento de Itens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="statusLabel" text="Servidor: Iniciando..." style="-fx-font-size: 12px;"/>
-    </HBox>
-    
-    <Separator/>
-    
-    <!-- Toolbar -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Buscar por código ou descrição..." prefWidth="300"/>
-        <Button fx:id="searchButton" text="Buscar" onAction="#handleSearch" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-        <Button fx:id="clearSearchButton" text="Limpar" onAction="#handleClearSearch"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="refreshButton" text="Atualizar" onAction="#handleRefresh" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
-        <Button fx:id="exportButton" text="Exportar CSV" onAction="#handleExport" style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
-        <Label fx:id="countLabel" text="Total: 0 itens" style="-fx-font-weight: bold;"/>
-    </HBox>
-    
-    <!-- Table -->
-    <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
-            <TableColumn fx:id="codigoColumn" text="Código Referência" prefWidth="150"/>
-            <TableColumn fx:id="quantidadeColumn" text="Quantidade" prefWidth="100"/>
-            <TableColumn fx:id="descricaoColumn" text="Descrição" prefWidth="300"/>
-            <TableColumn fx:id="dataColumn" text="Data Recebimento" prefWidth="180"/>
-        </columns>
-        <placeholder>
-            <Label text="Nenhum item recebido ainda"/>
-        </placeholder>
-    </TableView>
-    
-    <!-- Action Buttons -->
-    <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button fx:id="addButton" text="Adicionar Item" onAction="#handleAdd" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-        <Button fx:id="editButton" text="Editar" onAction="#handleEdit" disable="true" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
-        <Button fx:id="deleteButton" text="Excluir" onAction="#handleDelete" disable="true" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
-    </HBox>
-    
-    <!-- Footer -->
-    <Separator/>
-    <Label fx:id="footerLabel" text="Aguardando dados do aplicativo mobile..." style="-fx-font-size: 11px; -fx-text-fill: #666;"/>
-    
-</VBox>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.emissor.ui.MainViewController"
+            style="-fx-background-color: #f4f4f4;">
+    <top>
+        <VBox spacing="10" style="-fx-background-color: #f4f4f4;">
+            <padding>
+                <Insets top="15" right="15" bottom="0" left="15"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="EmissorJava - Sistema de Recebimento de Itens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="statusLabel" text="Servidor: Iniciando..." style="-fx-font-size: 12px;"/>
+            </HBox>
+            <Separator/>
+        </VBox>
+    </top>
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: #f4f4f4;">
+            <Tab text="Itens">
+                <VBox spacing="10" style="-fx-background-color: #f4f4f4;">
+                    <padding>
+                        <Insets top="15" right="15" bottom="15" left="15"/>
+                    </padding>
+
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Coleta:"/>
+                        <ComboBox fx:id="coletaComboBox" prefWidth="240"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                    </HBox>
+
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <TextField fx:id="searchField" promptText="Buscar por codigo ou descricao..." prefWidth="300"/>
+                        <Button fx:id="searchButton" text="Buscar" onAction="#handleSearch" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                        <Button fx:id="clearSearchButton" text="Limpar" onAction="#handleClearSearch"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="refreshButton" text="Atualizar" onAction="#handleRefresh" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+                        <Button fx:id="exportButton" text="Exportar TXT" onAction="#handleExport" style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
+                        <Label fx:id="countLabel" text="Total: 0 itens" style="-fx-font-weight: bold;"/>
+                    </HBox>
+
+                    <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="coletaColumn" text="Coleta" prefWidth="180"/>
+                            <TableColumn fx:id="codigoColumn" text="Codigo Referencia" prefWidth="150"/>
+                            <TableColumn fx:id="quantidadeColumn" text="Quantidade" prefWidth="100"/>
+                            <TableColumn fx:id="descricaoColumn" text="Descricao" prefWidth="300"/>
+                            <TableColumn fx:id="dataColumn" text="Data Recebimento" prefWidth="180"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Nenhum item recebido ainda"/>
+                        </placeholder>
+                    </TableView>
+
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Button fx:id="addButton" text="Adicionar Item" onAction="#handleAdd" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                        <Button fx:id="editButton" text="Editar" onAction="#handleEdit" disable="true" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+                        <Button fx:id="deleteButton" text="Excluir" onAction="#handleDelete" disable="true" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
+                    </HBox>
+                    <Separator/>
+                    <Label fx:id="footerLabel" text="Aguardando dados do aplicativo mobile..." style="-fx-font-size: 11px; -fx-text-fill: #666;"/>
+                </VBox>
+            </Tab>
+            <Tab text="Controle Coletas">
+                <VBox spacing="10" style="-fx-background-color: #f4f4f4;">
+                    <padding>
+                        <Insets top="15" right="15" bottom="15" left="15"/>
+                    </padding>
+
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <TextField fx:id="coletaNameField" promptText="Nome da coleta" prefWidth="280"/>
+                        <Button fx:id="createColetaButton" text="Cadastrar" onAction="#handleCreateColetaFromControl" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                        <Button fx:id="toggleBlockColetaButton" text="Bloquear/Desbloquear" onAction="#handleToggleColetaBlock"/>
+                        <Button fx:id="deleteColetaButton" text="Excluir" onAction="#handleDeleteColeta" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
+                        <Button fx:id="refreshColetasButton" text="Atualizar Coletas" onAction="#handleRefreshColetas"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                    </HBox>
+
+                    <TableView fx:id="coletasTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="coletaNameColumn" text="Coleta" prefWidth="320"/>
+                            <TableColumn fx:id="coletaBlockedColumn" text="Bloqueada" prefWidth="140"/>
+                            <TableColumn fx:id="coletaTotalColumn" text="Total Itens" prefWidth="140"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Nenhuma coleta cadastrada"/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="Configuracoes">
+                <fx:include source="SettingsView.fxml"/>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane>

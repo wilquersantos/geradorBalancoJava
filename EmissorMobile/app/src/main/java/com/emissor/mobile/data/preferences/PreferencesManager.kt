@@ -15,12 +15,14 @@ class PreferencesManager(private val context: Context) {
         private val SERVER_IP = stringPreferencesKey("server_ip")
         private val SERVER_PORT = stringPreferencesKey("server_port")
         private val API_TOKEN = stringPreferencesKey("api_token")
+        private val COLETA_NOME = stringPreferencesKey("coleta_nome")
         private val AUTO_QUANTITY = booleanPreferencesKey("auto_quantity")
         private val AUTO_SYNC = booleanPreferencesKey("auto_sync")
         
         const val DEFAULT_IP = "192.168.1.136"
         const val DEFAULT_PORT = "8084"
         const val DEFAULT_TOKEN = "emissor-token-2026"
+        const val DEFAULT_COLETA = "GERAL"
     }
     
     val serverIp: Flow<String> = context.dataStore.data.map { preferences ->
@@ -33,6 +35,10 @@ class PreferencesManager(private val context: Context) {
     
     val apiToken: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[API_TOKEN] ?: DEFAULT_TOKEN
+    }
+
+    val coletaNome: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[COLETA_NOME] ?: DEFAULT_COLETA
     }
     
     val autoQuantity: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -64,6 +70,13 @@ class PreferencesManager(private val context: Context) {
     suspend fun setApiToken(token: String) {
         context.dataStore.edit { preferences ->
             preferences[API_TOKEN] = token
+        }
+    }
+
+    suspend fun setColetaNome(coletaNome: String) {
+        context.dataStore.edit { preferences ->
+            val sanitized = coletaNome.trim().ifEmpty { DEFAULT_COLETA }
+            preferences[COLETA_NOME] = sanitized
         }
     }
     

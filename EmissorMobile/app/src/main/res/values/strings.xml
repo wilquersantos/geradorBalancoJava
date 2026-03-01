@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Emissor Mobile</string>
+    <string name="app_name">COLETOR MOBILE</string>
     
     <!-- Scanner -->
     <string name="scan_barcode">Escanear Código</string>
@@ -20,8 +20,8 @@
     <string name="add_description">Adicionar descrição</string>
     <string name="edit_item">Editar Item</string>
     <string name="delete_item">Excluir</string>
-    <string name="save">Salvar</string>
-    <string name="cancel">Cancelar</string>
+    <string name="save">SALVAR</string>
+    <string name="cancel">CANCELAR</string>
     
     <!-- Settings -->
     <string name="settings">Configurações</string>

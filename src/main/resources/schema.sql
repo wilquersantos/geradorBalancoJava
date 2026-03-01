@@ -1,6 +1,7 @@
 -- Create items table if not exists
 CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    coleta VARCHAR(255) NOT NULL DEFAULT 'GERAL',
     codigo_referencia VARCHAR(255) NOT NULL,
     quantidade INTEGER NOT NULL,
     descricao TEXT NOT NULL,

@@ -14,16 +14,16 @@ class ItemRepository(
 ) {
     
     // Local database operations
-    fun getAllItems(): Flow<List<ItemEntity>> = itemDao.getAllItems()
+    fun getItemsByGroup(groupId: Long): Flow<List<ItemEntity>> = itemDao.getItemsByGroup(groupId)
     
-    fun getItemCount(): Flow<Int> = itemDao.getItemCount()
+    fun getItemCountByGroup(groupId: Long): Flow<Int> = itemDao.getItemCountByGroup(groupId)
     
-    fun getUnsyncedCount(): Flow<Int> = itemDao.getUnsyncedCount()
+    fun getUnsyncedCountByGroup(groupId: Long): Flow<Int> = itemDao.getUnsyncedCountByGroup(groupId)
     
     suspend fun getItemById(id: Long): ItemEntity? = itemDao.getItemById(id)
     
-    suspend fun getItemByCodigo(codigo: String): ItemEntity? = 
-        itemDao.getItemByCodigo(codigo)
+    suspend fun getItemByCodigoInGroup(groupId: Long, codigo: String): ItemEntity? = 
+        itemDao.getItemByCodigoInGroup(groupId, codigo)
     
     suspend fun insertItem(item: ItemEntity): Long = itemDao.insertItem(item)
     
@@ -31,47 +31,45 @@ class ItemRepository(
     
     suspend fun deleteItem(item: ItemEntity) = itemDao.deleteItem(item)
     
-    suspend fun deleteAllItems() = itemDao.deleteAllItems()
+    suspend fun deleteItemsByGroup(groupId: Long) = itemDao.deleteItemsByGroup(groupId)
     
     // Barcode scanning logic
     suspend fun handleBarcodeScanned(
+        groupId: Long,
         barcode: String,
         autoQuantity: Boolean
-    ): ItemEntity {
-        val existingItem = getItemByCodigo(barcode)
+    ): Pair<ItemEntity, Boolean> {
+        val existingItem = itemDao.getItemByCodigoInGroup(groupId, barcode)
         
-        return if (existingItem != null && autoQuantity) {
-            // Incrementar quantidade automaticamente
+        return if (existingItem != null) {
             val updated = existingItem.copy(
                 quantidade = existingItem.quantidade + 1,
-                sincronizado = false // Marcar como não sincronizado
+                sincronizado = false
             )
             updateItem(updated)
-            updated
-        } else if (existingItem != null) {
-            // Retornar item existente sem modificar
-            existingItem
+            Pair(updated, false)
         } else {
-            // Criar novo item
             val newItem = ItemEntity(
+                groupId = groupId,
                 codigoReferencia = barcode,
                 quantidade = 1,
                 descricao = "",
                 sincronizado = false
             )
             val id = insertItem(newItem)
-            newItem.copy(id = id)
+            Pair(newItem.copy(id = id), true)
         }
     }
     
     // Server synchronization
-    suspend fun syncItemWithServer(item: ItemEntity): Result<ItemEntity> {
+    suspend fun syncItemWithServer(coleta: String, item: ItemEntity): Result<ItemEntity> {
         return try {
             val baseUrl = preferencesManager.baseUrl.first()
             val token = preferencesManager.apiToken.first()
             val api = RetrofitClient.getApi(baseUrl)
             
             val request = ItemRequestDTO(
+                coleta = coleta,
                 codigoReferencia = item.codigoReferencia,
                 quantidade = item.quantidade,
                 descricao = item.descricao
@@ -95,13 +93,13 @@ class ItemRepository(
         }
     }
     
-    suspend fun syncAllUnsyncedItems(): Result<Int> {
+    suspend fun syncAllUnsyncedItemsByGroup(coleta: String, groupId: Long): Result<Int> {
         return try {
-            val unsyncedItems = itemDao.getUnsyncedItems()
+            val unsyncedItems = itemDao.getUnsyncedItemsByGroup(groupId)
             var syncedCount = 0
             
             for (item in unsyncedItems) {
-                val result = syncItemWithServer(item)
+                val result = syncItemWithServer(coleta, item)
                 if (result.isSuccess) {
                     syncedCount++
                 }

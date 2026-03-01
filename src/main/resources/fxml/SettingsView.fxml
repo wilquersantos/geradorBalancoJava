@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.emissor.ui.SettingsViewController"
+      spacing="20" style="-fx-background-color: #f4f4f4;">
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+    <VBox spacing="5">
+        <Label text="Configurações do Servidor" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+        <Label text="Configure como o servidor será executado nesta máquina."
+               style="-fx-font-size: 12px; -fx-text-fill: #666666;"/>
+    </VBox>
+    <Separator/>
+    <VBox spacing="20" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 5; -fx-border-color: #dddddd; -fx-border-radius: 5;">
+        <VBox spacing="8">
+            <Label text="Endereço IP do Servidor" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <Label text="IP local detectado automaticamente. Este é o endereço que dispositivos móveis podem usar para conectar."
+                   style="-fx-font-size: 11px; -fx-text-fill: #666666;" wrapText="true"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="IP:" minWidth="40"/>
+                <TextField fx:id="ipTextField" promptText="Detectando..." prefWidth="300"
+                           style="-fx-font-family: monospace;"/>
+            </HBox>
+        </VBox>
+        <Separator/>
+        <VBox spacing="8">
+            <Label text="Porta do Servidor" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <Label text="Porta na qual o servidor REST irá ouvir conexões (1024-65535). A alteração será aplicada imediatamente."
+                   style="-fx-font-size: 11px; -fx-text-fill: #666666;" wrapText="true"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Porta:" minWidth="40"/>
+                <TextField fx:id="portTextField" promptText="8084" prefWidth="150"
+                           style="-fx-font-family: monospace;"/>
+            </HBox>
+        </VBox>
+        <Separator/>
+        <VBox spacing="8">
+            <Label text="Atualização da Lista" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <Label text="Escolha como a lista da tela inicial será atualizada." style="-fx-font-size: 11px; -fx-text-fill: #666666;" wrapText="true"/>
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <CheckBox fx:id="autoUpdateCheckBox" text="Atualizar automaticamente a cada"/>
+                <TextField fx:id="intervalTextField" promptText="5" prefWidth="50"/>
+                <Label text="segundos"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button fx:id="manualUpdateButton" text="Atualizar manualmente" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6 16; -fx-font-size: 12px;"/>
+                <Label fx:id="updateStatusLabel" style="-fx-font-size: 12px;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Button fx:id="saveButton" text="Salvar e Aplicar"
+                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-font-size: 13px;"/>
+        <Label fx:id="statusMessageLabel" style="-fx-font-size: 12px;"/>
+    </HBox>
+    <Region VBox.vgrow="ALWAYS"/>
+    <VBox spacing="5" style="-fx-background-color: #e3f2fd; -fx-padding: 15; -fx-background-radius: 5;">
+        <Label text="Dica:" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>
+        <Label text="Para acessar de dispositivos móveis, utilize: http://[IP]:[PORTA]/api/"
+               style="-fx-font-size: 11px;" wrapText="true"/>
+        <Label text="Exemplo: http://192.168.1.100:8084/api/items"
+               style="-fx-font-size: 11px; -fx-font-family: monospace; -fx-text-fill: #1976D2;" wrapText="true"/>
+    </VBox>
+</VBox>

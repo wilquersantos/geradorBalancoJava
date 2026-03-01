@@ -4,17 +4,20 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.emissor.mobile.data.local.dao.CollectionGroupDao
 import com.emissor.mobile.data.local.dao.ItemDao
+import com.emissor.mobile.data.local.entity.CollectionGroupEntity
 import com.emissor.mobile.data.local.entity.ItemEntity
 
 @Database(
-    entities = [ItemEntity::class],
-    version = 1,
+    entities = [ItemEntity::class, CollectionGroupEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     
     abstract fun itemDao(): ItemDao
+    abstract fun collectionGroupDao(): CollectionGroupDao
     
     companion object {
         @Volatile
@@ -26,7 +29,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "emissor_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

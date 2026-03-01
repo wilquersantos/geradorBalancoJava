@@ -4,9 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.emissor.mobile.data.local.AppDatabase
+import com.emissor.mobile.data.local.entity.CollectionGroupEntity
 import com.emissor.mobile.data.local.entity.ItemEntity
 import com.emissor.mobile.data.preferences.PreferencesManager
-import com.emissor.mobile.data.repository.ItemRepository
+import com.emissor.mobile.data.repository.CollectionRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -14,18 +15,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     
     private val database = AppDatabase.getDatabase(application)
     private val preferencesManager = PreferencesManager(application)
-    private val repository = ItemRepository(database.itemDao(), preferencesManager)
+    private val repository = CollectionRepository(
+        database.collectionGroupDao(),
+        database.itemDao(),
+        preferencesManager
+    )
     
-    // State flows
-    val items = repository.getAllItems()
+    // Groups state
+    val groups = repository.getAllGroups()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    
-    val itemCount = repository.getItemCount()
+
+    private val _currentGroup = MutableStateFlow<CollectionGroupEntity?>(null)
+    val currentGroup: StateFlow<CollectionGroupEntity?> = _currentGroup.asStateFlow()
+
+    // Items for current group
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val itemsInCurrentGroup = _currentGroup
+        .filterNotNull()
+        .flatMapLatest { group -> repository.getItemsByGroup(group.id) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val unsyncedCountInCurrentGroup = _currentGroup
+        .filterNotNull()
+        .flatMapLatest { group -> repository.getUnsyncedCountByGroup(group.id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-    
-    val unsyncedCount = repository.getUnsyncedCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-    
+
+    // Settings flows
     val autoQuantity = preferencesManager.autoQuantity
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
     
@@ -33,45 +49,78 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
     
     val serverIp = preferencesManager.serverIp
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 
-            PreferencesManager.DEFAULT_IP)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreferencesManager.DEFAULT_IP)
     
     val serverPort = preferencesManager.serverPort
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 
-            PreferencesManager.DEFAULT_PORT)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreferencesManager.DEFAULT_PORT)
     
     val apiToken = preferencesManager.apiToken
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 
-            PreferencesManager.DEFAULT_TOKEN)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreferencesManager.DEFAULT_TOKEN)
     
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    private val _connectionStatus = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Disconnected)
+    val connectionStatus: StateFlow<ConnectionStatus> = _connectionStatus.asStateFlow()
     
     private val _showScanner = MutableStateFlow(false)
     val showScanner: StateFlow<Boolean> = _showScanner.asStateFlow()
+
+    private val _selectedItem = MutableStateFlow<ItemEntity?>(null)
+    val selectedItem: StateFlow<ItemEntity?> = _selectedItem.asStateFlow()
     
     // Actions
+    fun createCollection(name: String) {
+        viewModelScope.launch {
+            repository.createGroup(name)
+            _uiState.value = UiState.Success("Coleta '$name' criada")
+        }
+    }
+
+    fun selectGroup(group: CollectionGroupEntity?) {
+        _currentGroup.value = group
+    }
+
+    fun deleteGroup(group: CollectionGroupEntity) {
+        viewModelScope.launch {
+            repository.deleteGroup(group)
+            if (_currentGroup.value?.id == group.id) {
+                _currentGroup.value = null
+            }
+            _uiState.value = UiState.Success("Coleta excluída")
+        }
+    }
+
+    fun deleteItemsInCurrentGroup() {
+        val group = _currentGroup.value ?: return
+        viewModelScope.launch {
+            repository.deleteItemsByGroup(group.id)
+            _uiState.value = UiState.Success("Itens da coleta removidos")
+        }
+    }
+
     fun onBarcodeScanned(barcode: String) {
+        val group = _currentGroup.value ?: return
         viewModelScope.launch {
             try {
                 _uiState.value = UiState.Loading
+                val result = repository.handleBarcodeScanned(group.id, barcode)
+                val item = result.first
+                val isNew = result.second
                 
-                val item = repository.handleBarcodeScanned(
-                    barcode = barcode,
-                    autoQuantity = autoQuantity.value
-                )
-                
-                _uiState.value = UiState.Success("Código escaneado: $barcode")
-                
-                // Auto sync if enabled
-                if (autoSync.value) {
-                    syncItem(item)
+                if (isNew) {
+                    _selectedItem.value = item
+                    _uiState.value = UiState.Success("Novo produto. Informe a descrição.")
+                } else {
+                    _uiState.value = UiState.Success("Bipado: $barcode. Qtd: ${item.quantidade}")
+                    // Trigger auto sync if enabled
+                    if (autoSync.value) {
+                        syncCurrentGroup()
+                    }
                 }
-                
-                // Close scanner
                 _showScanner.value = false
             } catch (e: Exception) {
-                _uiState.value = UiState.Error(e.message ?: "Erro ao processar código")
+                _uiState.value = UiState.Error(e.message ?: "Erro ao bipar")
             }
         }
     }
@@ -82,82 +131,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 repository.updateItem(item)
                 _uiState.value = UiState.Success("Item atualizado")
                 
+                // Trigger auto sync if enabled
                 if (autoSync.value) {
-                    syncItem(item)
+                    syncCurrentGroup()
                 }
             } catch (e: Exception) {
-                _uiState.value = UiState.Error(e.message ?: "Erro ao atualizar item")
+                _uiState.value = UiState.Error("Erro ao atualizar item")
             }
         }
     }
     
     fun deleteItem(item: ItemEntity) {
         viewModelScope.launch {
-            try {
-                repository.deleteItem(item)
-                _uiState.value = UiState.Success("Item excluído")
-            } catch (e: Exception) {
-                _uiState.value = UiState.Error(e.message ?: "Erro ao excluir item")
-            }
+            repository.deleteItem(item)
+            _uiState.value = UiState.Success("Item excluído")
         }
     }
     
-    fun deleteAllItems() {
-        viewModelScope.launch {
-            try {
-                repository.deleteAllItems()
-                _uiState.value = UiState.Success("Todos os itens foram excluídos")
-            } catch (e: Exception) {
-                _uiState.value = UiState.Error(e.message ?: "Erro ao excluir itens")
-            }
-        }
-    }
-    
-    fun syncItem(item: ItemEntity) {
-        viewModelScope.launch {
-            try {
-                val result = repository.syncItemWithServer(item)
-                if (result.isSuccess) {
-                    _uiState.value = UiState.Success("Item sincronizado")
-                } else {
-                    _uiState.value = UiState.Error(
-                        result.exceptionOrNull()?.message ?: "Erro ao sincronizar"
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.value = UiState.Error(e.message ?: "Erro de conexão")
-            }
-        }
-    }
-    
-    fun syncAllItems() {
+    fun syncCurrentGroup() {
+        val group = _currentGroup.value ?: return
         viewModelScope.launch {
             try {
                 _uiState.value = UiState.Loading
-                val result = repository.syncAllUnsyncedItems()
-                
+                val result = repository.syncGroup(group.id)
                 if (result.isSuccess) {
-                    val count = result.getOrDefault(0)
-                    _uiState.value = UiState.Success("$count itens sincronizados")
+                    _uiState.value = UiState.Success("${result.getOrDefault(0)} itens sincronizados")
                 } else {
-                    _uiState.value = UiState.Error(
-                        result.exceptionOrNull()?.message ?: "Erro ao sincronizar"
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.value = UiState.Error(e.message ?: "Erro de conexão")
-            }
-        }
-    }
-    
-    fun checkServerConnection() {
-        viewModelScope.launch {
-            try {
-                val result = repository.checkServerConnection()
-                if (result.isSuccess) {
-                    _uiState.value = UiState.Success("Servidor conectado")
-                } else {
-                    _uiState.value = UiState.Error("Servidor não disponível")
+                    _uiState.value = UiState.Error("Erro ao sincronizar")
                 }
             } catch (e: Exception) {
                 _uiState.value = UiState.Error("Erro de conexão")
@@ -165,45 +165,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
-    // Settings
-    fun setServerIp(ip: String) {
+    fun checkServerConnection() {
         viewModelScope.launch {
-            preferencesManager.setServerIp(ip)
+            _connectionStatus.value = ConnectionStatus.Testing
+            val result = repository.checkServerConnection()
+            if (result.isSuccess && result.getOrDefault(false)) {
+                _connectionStatus.value = ConnectionStatus.Connected
+                _uiState.value = UiState.Success("Servidor online")
+            } else {
+                _connectionStatus.value = ConnectionStatus.Disconnected
+                _uiState.value = UiState.Error("Servidor offline")
+            }
         }
     }
     
-    fun setServerPort(port: String) {
-        viewModelScope.launch {
-            preferencesManager.setServerPort(port)
-        }
-    }
-    
-    fun setApiToken(token: String) {
-        viewModelScope.launch {
-            preferencesManager.setApiToken(token)
-        }
-    }
-    
-    fun setAutoQuantity(enabled: Boolean) {
-        viewModelScope.launch {
-            preferencesManager.setAutoQuantity(enabled)
-        }
-    }
-    
-    fun setAutoSync(enabled: Boolean) {
-        viewModelScope.launch {
-            preferencesManager.setAutoSync(enabled)
-        }
-    }
-    
-    fun showScanner(show: Boolean) {
-        _showScanner.value = show
-    }
-    
-    fun clearUiState() {
-        _uiState.value = UiState.Idle
-    }
-    
+    fun setSelectedItem(item: ItemEntity?) { _selectedItem.value = item }
+    fun showScanner(show: Boolean) { _showScanner.value = show }
+    fun clearUiState() { _uiState.value = UiState.Idle }
+    fun setServerIp(ip: String) { viewModelScope.launch { preferencesManager.setServerIp(ip) } }
+    fun setServerPort(port: String) { viewModelScope.launch { preferencesManager.setServerPort(port) } }
+    fun setApiToken(token: String) { viewModelScope.launch { preferencesManager.setApiToken(token) } }
+    fun setAutoQuantity(enabled: Boolean) { viewModelScope.launch { preferencesManager.setAutoQuantity(enabled) } }
+    fun setAutoSync(enabled: Boolean) { viewModelScope.launch { preferencesManager.setAutoSync(enabled) } }
+
     sealed class UiState {
         object Idle : UiState()
         object Loading : UiState()

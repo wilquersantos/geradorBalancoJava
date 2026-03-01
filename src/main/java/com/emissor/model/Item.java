@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public class Item {
     private Long id;
+    private String coleta;
     private String codigoReferencia;
     private Integer quantidade;
     private String descricao;
@@ -12,21 +13,29 @@ public class Item {
     public Item() {
     }
 
-    public Item(Long id, String codigoReferencia, Integer quantidade, String descricao, LocalDateTime dataRecebimento) {
+    public Item(Long id, String coleta, String codigoReferencia, Integer quantidade, String descricao, LocalDateTime dataRecebimento) {
         this.id = id;
+        this.coleta = coleta;
         this.codigoReferencia = codigoReferencia;
         this.quantidade = quantidade;
         this.descricao = descricao;
         this.dataRecebimento = dataRecebimento;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getColeta() {
+        return coleta;
+    }
+
+    public void setColeta(String coleta) {
+        this.coleta = coleta;
     }
 
     public String getCodigoReferencia() {
@@ -59,16 +68,5 @@ public class Item {
 
     public void setDataRecebimento(LocalDateTime dataRecebimento) {
         this.dataRecebimento = dataRecebimento;
-    }
-
-    @Override
-    public String toString() {
-        return "Item{" +
-                "id=" + id +
-                ", codigoReferencia='" + codigoReferencia + '\'' +
-                ", quantidade=" + quantidade +
-                ", descricao='" + descricao + '\'' +
-                ", dataRecebimento=" + dataRecebimento +
-                '}';
     }
 }

@@ -1,16 +1,21 @@
 package com.emissor.mobile.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.emissor.mobile.R
 import com.emissor.mobile.data.local.entity.ItemEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,6 +29,7 @@ fun ItemEditDialog(
     var quantidade by remember { mutableStateOf(item.quantidade.toString()) }
     var descricao by remember { mutableStateOf(item.descricao) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
     
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -35,12 +41,14 @@ fun ItemEditDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp)
+                    .padding(20.dp)
+                    .verticalScroll(scrollState)
             ) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Editar Item",
@@ -96,12 +104,13 @@ fun ItemEditDialog(
                 // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Delete button
-                    OutlinedButton(
+                    // Delete button (TextButton to save space)
+                    TextButton(
                         onClick = { showDeleteConfirm = true },
-                        colors = ButtonDefaults.outlinedButtonColors(
+                        colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.error
                         )
                     ) {
@@ -110,33 +119,33 @@ fun ItemEditDialog(
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text("Excluir")
                     }
                     
-                    Row {
-                        // Cancel button
-                        TextButton(onClick = onDismiss) {
-                            Text("Cancelar")
-                        }
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        // Save button
-                        Button(
-                            onClick = {
-                                val qtd = quantidade.toIntOrNull() ?: item.quantidade
-                                val updatedItem = item.copy(
-                                    quantidade = qtd,
-                                    descricao = descricao,
-                                    sincronizado = false // Mark as unsynced
-                                )
-                                onSave(updatedItem)
-                            },
-                            enabled = quantidade.toIntOrNull() != null && quantidade.toInt() > 0
-                        ) {
-                            Text("Salvar")
-                        }
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    // Cancel button
+                    TextButton(onClick = onDismiss) {
+                        Text("CANCELAR")
+                    }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    // Save button
+                    Button(
+                        onClick = {
+                            val qtd = quantidade.toIntOrNull() ?: item.quantidade
+                            val updatedItem = item.copy(
+                                quantidade = qtd,
+                                descricao = descricao,
+                                sincronizado = false
+                            )
+                            onSave(updatedItem)
+                        },
+                        enabled = quantidade.isNotBlank() && (quantidade.toIntOrNull() ?: 0) > 0
+                    ) {
+                        Text("SALVAR")
                     }
                 }
             }

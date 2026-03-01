@@ -1,10 +1,12 @@
 package com.emissor.dto;
 
 import com.emissor.model.Item;
+
 import java.time.LocalDateTime;
 
 public class ItemResponseDTO {
     private Long id;
+    private String coleta;
     private String codigoReferencia;
     private Integer quantidade;
     private String descricao;
@@ -15,6 +17,7 @@ public class ItemResponseDTO {
 
     public ItemResponseDTO(Item item) {
         this.id = item.getId();
+        this.coleta = item.getColeta();
         this.codigoReferencia = item.getCodigoReferencia();
         this.quantidade = item.getQuantidade();
         this.descricao = item.getDescricao();
@@ -27,6 +30,14 @@ public class ItemResponseDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getColeta() {
+        return coleta;
+    }
+
+    public void setColeta(String coleta) {
+        this.coleta = coleta;
     }
 
     public String getCodigoReferencia() {

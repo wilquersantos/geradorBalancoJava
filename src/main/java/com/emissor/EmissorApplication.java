@@ -1,5 +1,6 @@
 package com.emissor;
 
+import com.emissor.config.ConfigurationManager;
 import com.emissor.service.ItemService;
 import com.emissor.ui.MainViewController;
 import javafx.application.Application;
@@ -28,7 +29,11 @@ public class EmissorApplication extends Application {
     
     @Override
     public void init() throws Exception {
-        // Iniciar Spring Boot context em background
+        // Aplicar porta persistida antes de subir o Spring Boot
+        ConfigurationManager configurationManager = new ConfigurationManager();
+        System.setProperty("server.port", String.valueOf(configurationManager.getServerPort()));
+
+        // Iniciar Spring Boot context
         springContext = SpringApplication.run(EmissorApplication.class);
         
         // Carregar FXML
@@ -46,7 +51,10 @@ public class EmissorApplication extends Application {
         primaryStage.setTitle("EmissorJava - Recebimento de Itens");
         
         Scene scene = new Scene(rootNode, 1000, 600);
+        String currentStyle = rootNode.getStyle() == null ? "" : rootNode.getStyle();
+        rootNode.setStyle(currentStyle + "; -fx-font-size: 14px;");
         primaryStage.setScene(scene);
+        primaryStage.setMaximized(true);
         
         // Configurar comportamento ao fechar
         primaryStage.setOnCloseRequest(event -> {

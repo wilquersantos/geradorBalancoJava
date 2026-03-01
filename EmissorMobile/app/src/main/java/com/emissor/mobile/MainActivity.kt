@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.emissor.mobile.data.local.entity.ItemEntity
+import com.emissor.mobile.ui.screens.GroupSelectionScreen
 import com.emissor.mobile.ui.screens.ItemEditDialog
 import com.emissor.mobile.ui.screens.ItemsListScreen
 import com.emissor.mobile.ui.screens.SettingsScreen
@@ -38,17 +39,21 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
-    val items by viewModel.items.collectAsState()
-    val unsyncedCount by viewModel.unsyncedCount.collectAsState()
+    val groups by viewModel.groups.collectAsState()
+    val currentGroup by viewModel.currentGroup.collectAsState()
+    val items by viewModel.itemsInCurrentGroup.collectAsState()
+    val unsyncedCount by viewModel.unsyncedCountInCurrentGroup.collectAsState()
+    
     val showScanner by viewModel.showScanner.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val autoQuantity by viewModel.autoQuantity.collectAsState()
     val autoSync by viewModel.autoSync.collectAsState()
+    val connectionStatus by viewModel.connectionStatus.collectAsState()
     val serverIp by viewModel.serverIp.collectAsState()
     val serverPort by viewModel.serverPort.collectAsState()
     val apiToken by viewModel.apiToken.collectAsState()
     
-    var selectedItem by remember { mutableStateOf<ItemEntity?>(null) }
+    val selectedItem by viewModel.selectedItem.collectAsState()
     var showSettings by remember { mutableStateOf(false) }
     
     val snackbarHostState = remember { SnackbarHostState() }
@@ -86,6 +91,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         apiToken = apiToken,
                         autoQuantity = autoQuantity,
                         autoSync = autoSync,
+                        connectionStatus = connectionStatus,
                         onServerIpChange = viewModel::setServerIp,
                         onServerPortChange = viewModel::setServerPort,
                         onApiTokenChange = viewModel::setApiToken,
@@ -95,6 +101,15 @@ fun MainScreen(viewModel: MainViewModel) {
                         onBack = { showSettings = false }
                     )
                 }
+                currentGroup == null -> {
+                    GroupSelectionScreen(
+                        groups = groups,
+                        onGroupSelected = { viewModel.selectGroup(it) },
+                        onAddGroup = { viewModel.createCollection(it) },
+                        onDeleteGroup = { viewModel.deleteGroup(it) },
+                        onSettingsClick = { showSettings = true }
+                    )
+                }
                 showScanner && cameraPermissionState.status.isGranted -> {
                     BarcodeScannerScreen(
                         onBarcodeScanned = viewModel::onBarcodeScanned,
@@ -102,21 +117,24 @@ fun MainScreen(viewModel: MainViewModel) {
                     )
                 }
                 else -> {
-                    ItemsListScreen(
-                        items = items,
-                        unsyncedCount = unsyncedCount,
-                        onScanClick = {
-                            if (cameraPermissionState.status.isGranted) {
-                                viewModel.showScanner(true)
-                            } else {
-                                cameraPermissionState.launchPermissionRequest()
-                            }
-                        },
-                        onItemClick = { selectedItem = it },
-                        onSyncClick = viewModel::syncAllItems,
-                        onSettingsClick = { showSettings = true },
-                        onDeleteAllClick = viewModel::deleteAllItems
-                    )
+                    currentGroup?.let { group ->
+                        ItemsListScreen(
+                            group = group,
+                            items = items,
+                            unsyncedCount = unsyncedCount,
+                            onScanClick = {
+                                if (cameraPermissionState.status.isGranted) {
+                                    viewModel.showScanner(true)
+                                } else {
+                                    cameraPermissionState.launchPermissionRequest()
+                                }
+                            },
+                            onItemClick = { viewModel.setSelectedItem(it) },
+                            onSyncClick = viewModel::syncCurrentGroup,
+                            onBackClick = { viewModel.selectGroup(null) },
+                            onDeleteItemsClick = { viewModel.deleteItemsInCurrentGroup() }
+                        )
+                    }
                 }
             }
             
@@ -124,14 +142,14 @@ fun MainScreen(viewModel: MainViewModel) {
             selectedItem?.let { item ->
                 ItemEditDialog(
                     item = item,
-                    onDismiss = { selectedItem = null },
+                    onDismiss = { viewModel.setSelectedItem(null) },
                     onSave = { updatedItem ->
                         viewModel.updateItem(updatedItem)
-                        selectedItem = null
+                        viewModel.setSelectedItem(null)
                     },
                     onDelete = { itemToDelete ->
                         viewModel.deleteItem(itemToDelete)
-                        selectedItem = null
+                        viewModel.setSelectedItem(null)
                     }
                 )
             }
